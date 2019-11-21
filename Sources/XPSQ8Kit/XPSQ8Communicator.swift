@@ -51,12 +51,69 @@ final class XPSQ8Communicator {
 		do {
 			// I'm not sure why we need to senable blocking, but the python drivers enabled it, so we will too.
 			try socket.setBlocking(mode: true)
-		} catch { throw Error.coultNotEnableBlocking }
+		} catch { throw Error.couldNotEnableBlocking }
 	}
 	
 	deinit {
 		// Close the connection to the socket because we will no longer need it.
 		socket.close()
+	}
+}
+
+// MARK: Reading
+
+extension XPSQ8Communicator {
+	/// Reads a message from the instrument.
+	///
+	/// - Throws: If a reading or decoding error occurred.
+	///
+	/// - Returns: The message string and integer code returned by the instrument.
+	func read() throws -> (message: String, code: Int) {
+		// The message may not fit in a single buffer (only 1024 bytes). To overcome this, we continue to request data until we are at the end of the message.
+		// The API ends all of its messages in the string ",EndOfAPI", so we continue to append values to `string` until it ends in ",EndOfAPI".
+		var string = ""
+		repeat {
+			do {
+				guard let substring = try socket.readString() else { throw Error.failedReadOperation }
+				string += substring
+			} catch { throw Error.failedReadOperation }
+		} while !string.hasSuffix(",EndOfAPI")
+		
+		// The message returned is divided into three parts seperated by commas:
+		// 1. The integer code associated with the message
+		// 2. The string content of the message
+		// 3. The string "EndOfAPI" to indicate the end of the message
+		//
+		// We can discard the "EndOfAPI" portion because every message ends with this, so it carries no information.
+		// We then want to seperate the integer code and string content to return to the user.
+		// The firstDividerIndex is the string index of the first comma, which seperates the integer code and string content.
+		guard let firstDividerIndex = string.firstIndex(of: ",") else { throw Error.couldNotDecode }
+		
+		// integerCodeRange is the range of characters of the integer code. It is from the first character to immediately before the first comma.
+		let integerCodeRange = string.startIndex..<firstDividerIndex
+		guard let integerCode = Int(string[integerCodeRange]) else { throw Error.couldNotDecode }
+		
+		// messageRange is the range of characters of the string content. It is from after the first comma to immediately before the comma directly before
+		// the substring "EndOfAPI". Because there will always be 9 final characters we want to cut from the end (",EndOfAPI"), we can simply subtract 9 from
+		// the string's end index to get the end index.
+		let messageRange = string.index(after: firstDividerIndex)..<string.index(string.endIndex, offsetBy: -9)
+		let message = String(string[messageRange])
+		
+		return (message, integerCode)
+	}
+}
+
+// MARK: Writing
+
+extension XPSQ8Communicator {
+	/// Sends a string to the instrument. This should be a function such as `"ElapsedTimeGet(double *)"`.
+	/// - Parameter string: The string to sent the instrument.
+	func write(string: String) throws {
+		do {
+			try socket.write(from: string)
+		} catch {
+			throw Error.failedWriteOperation
+		}
 	}
 }
 
@@ -72,7 +129,10 @@ extension XPSQ8Communicator {
 		case couldNotCreateSocket
 		case couldNotConnect
 		case couldNotSetTimeout
-		case coultNotEnableBlocking
+		case couldNotEnableBlocking
+		case failedWriteOperation
+		case failedReadOperation
+		case couldNotDecode
 	}
 }
 
@@ -86,8 +146,14 @@ extension XPSQ8Communicator.Error {
 			return "Could not create socket."
 		case .couldNotSetTimeout:
 			return "Could not set timeout."
-		case .coultNotEnableBlocking:
+		case .couldNotEnableBlocking:
 			return "Could not enable blocking."
+		case .failedWriteOperation:
+			return "Failed write operation."
+		case .failedReadOperation:
+			return "Failed read operation."
+		case .couldNotDecode:
+			return "Could not decode."
 		}
 	}
 }
