@@ -1,23 +1,26 @@
 import XCTest
 @testable import XPSQ8Kit
 
-final class XPSQ8KitTests: XCTestCase {
+final class XPSQ8CommunicatorTests: XCTestCase {
 	
+	/// The communicator to be used by the tests
 	static var communicator: XPSQ8Communicator!
-	var communicator: XPSQ8Communicator! {
-		return XPSQ8KitTests.communicator
-	}
 	
 	override class func setUp() {
 		communicator = try? .init(address: "192.168.0.254", port: 5001, timeout: 5.0)
 	}
 	
+	/// Tests that an instrument is connected to properly. If this is failing, check the connection between the instrument. This will cause most other tests to fail.
 	func testConnectToInstrument() {
-		XCTAssertNotNil(communicator, "Could not create communicator.")
+		// The communicator needs to be created before any tests are run, so it has to be created in setUp(). We check that it is not nil here.
+		XCTAssertNotNil(Self.communicator, "Could not create communicator.")
 	}
 	
-	func testGetTimeElapsed() {
-		guard let communicator = communicator else {
+	/// Tests that the read write functionality is working by sending the function `ElapsedTimeGet(double *)`.
+	///
+	/// The choise of function is arbitrary - `ElapsedTimeGet(double *)` was chosen because its ouput is a single Double value.
+	func testReadWrite() {
+		guard let communicator = Self.communicator else {
 			XCTFail("Could not create communicator.")
 			return
 		}
@@ -29,22 +32,16 @@ final class XPSQ8KitTests: XCTestCase {
 			return
 		}
 		
-		let message: String
-		let code: Int
-		
 		do {
-			(message, code) = try communicator.read()
+			_ = try communicator.read()
 		} catch {
 			XCTFail("Could not read.")
 			return
 		}
-		
-		print("Message: \(message)")
-		print("Code: \(code)")
 	}
 	
 	static var allTests = [
 		("testConnectToInstrument", testConnectToInstrument),
-		("testGetTimeElapsed", testGetTimeElapsed),
+		("testGetTimeElapsed", testReadWrite),
 	]
 }
