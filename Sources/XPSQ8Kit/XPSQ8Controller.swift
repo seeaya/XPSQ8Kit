@@ -11,6 +11,9 @@ public class XPSQ8Controller {
 	
 	var communicator: XPSQ8Communicator
 	
+	/// The controller's global double array. Values can be get and set using subscript notation.
+	public var globalDoubleArray: GlobalDoubleArray
+	
 	/// Tries to create a controller for an instrument at the given address and port. A timeout value can optionally be specified.
 	///
 	/// If a timeout value is not specified, a value of `5.0` seconds will be used.
@@ -31,5 +34,8 @@ public class XPSQ8Controller {
 		do {
 			communicator = try .init(address: address, port: port, timeout: timeout)
 		} catch { return nil }
+		
+		globalDoubleArray = GlobalDoubleArray()
+		globalDoubleArray.controller = self
 	}
 }

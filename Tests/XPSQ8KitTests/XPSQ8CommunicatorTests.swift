@@ -33,7 +33,7 @@ final class XPSQ8CommunicatorTests: XCTestCase {
 		}
 		
 		do {
-			_ = try communicator.read()
+			_ = try communicator.read(as: Double.self)
 		} catch {
 			XCTFail("Could not read.")
 			return
