@@ -11,18 +11,19 @@ public extension XPSQ8Controller {
 	struct GlobalDoubleArray {
 		weak var controller: XPSQ8Controller!
 		
-		/// Gets or sets a value in the controller's global double array.
-		///
-		/// - Note: This method does not throw – if an invalid index is given, or the controller could not be read from or written to, it will result in a fatal error.
-		// The method does not throw because Swift does not allow throwing from a subscript.
-		public subscript(index: Int) -> Double {
-			get {
-				try! self.controller.communicator.write(string: "DoubleGlobalArrayGet(\(index),double *)")
-				return try! self.controller.communicator.read(as: Double.self)
-			}
-			set {
-				try! self.controller.communicator.write(string: "DoubleGlobalArraySet(\(index),\(newValue))")
-			}
+		/// Gets a value in the global double array at the given index.
+		/// - Parameter index: The index of the array.
+		public func get(at index: Int) throws -> Double {
+			try controller.communicator.write(string: "DoubleGlobalArrayGet(\(index),double *)")
+			return try controller.communicator.read(as: Double.self)
+		}
+		
+		/// Sets a value in the global double array at the given index.
+		/// - Parameters:
+		///   - value: The new value to set.
+		///   - index: The index of the array.
+		public func set(to value: Double, at index: Int) throws {
+			try controller.communicator.write(string: "DoubleGlobalArraySet(\(index),\(value))")
 		}
 	}
 }
