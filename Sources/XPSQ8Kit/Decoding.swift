@@ -53,6 +53,12 @@ private extension XPSQ8Communicator {
 extension XPSQ8Communicator {
 	// Swift does not support a variadic number of generic arguments, so a different function has to be made with each number of possible arguments. The largest number of arguments that a function returns is 16, so there are 16 different read functions (Right now there have only been 6 added)
 	
+	/// Called when writing a message that does not return a value. This ensures that a code of 0 was received.
+	func validateNoReturn() throws {
+		let components = try readComponents()
+		guard components.isEmpty else { throw Error.couldNotDecode }
+	}
+	
 	func read<T: XPSQ8Decodable>(as: T.Type) throws -> T {
 		let components = try readComponents()
 		guard components.count == 1 else { throw Error.couldNotDecode }

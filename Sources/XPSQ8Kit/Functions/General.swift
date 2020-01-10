@@ -19,6 +19,7 @@ public extension XPSQ8Controller {
 	/// Close all socket beside the one used to send this command.
 	func closeAllOtherSockets() throws {
 		try communicator.write(string: "CloseAllOtherSockets()")
+		try communicator.validateNoReturn()
 	}
 	
 	/// Get controller motion kernel time load.
