@@ -47,7 +47,7 @@ public extension XPSQ8Controller.GroupController {
 	
 	
 	func moveRelative(groupName: String, targetDisplacment: Double) throws {
-		let command = "GroupMoveRelative( \(groupName), \(targetDisplacment)"
+		let command = "GroupMoveRelative(\(groupName),\(targetDisplacment))"
 		
 		try controller.communicator.write(string: command)
 		try controller.communicator.validateNoReturn()
