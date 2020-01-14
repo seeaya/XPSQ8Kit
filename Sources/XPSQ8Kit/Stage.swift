@@ -7,11 +7,16 @@
 
 import Foundation
 
-struct Stage {
+class Stage {
 	let controller: XPSQ8Controller.GroupController
 	let stageName: String
 	
-	let groupName {
+	public init(controller: XPSQ8Controller.GroupController, stageName: String) {
+		self.controller = controller
+		self.stageName = stageName
+	}
+	
+	var groupName:String {
 		get {
 			return controller.globalGroupName + "." + stageName
 		}

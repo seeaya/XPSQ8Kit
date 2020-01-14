@@ -8,7 +8,7 @@
 import Foundation
 
 public extension XPSQ8Controller {
-	public struct GatheringController {
+	struct GatheringController {
 		var controller: XPSQ8Controller
 	}
 }

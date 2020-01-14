@@ -10,7 +10,7 @@ public extension XPSQ8Controller {
 	// TODO: Fix groupName to thrown an error if the String is larger than 250 characters (instrument is limited to 250 character strings)
 	struct GroupController {
 		var controller: XPSQ8Controller
-		var stages: [Stages] = []
+		var stages: [Stage] = []
 		let globalGroupName: String
 		//let stageName: String?
 	}
@@ -21,7 +21,7 @@ public extension XPSQ8Controller {
 public extension XPSQ8Controller {
 	/// The set of commands dealing with globals.
 	func group(named name: String) -> GroupController {
-		return GroupController(controller: self, groupName: name)
+		return GroupController(controller: self, globalGroupName: name)
 	}
 
 //	var group: GroupController {
@@ -47,7 +47,7 @@ public extension XPSQ8Controller.GroupController {
 */
 	
 	
-	func moveRelative(stage: Stage, targetDisplacment: Double) throws {
+	internal func moveRelative(stage: Stage, targetDisplacment: Double) throws {
 		let command = "GroupMoveRelative(\(stage.groupName),\(targetDisplacment))"
 		
 		try controller.communicator.write(string: command)
